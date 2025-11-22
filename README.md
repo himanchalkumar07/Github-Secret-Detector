@@ -1,40 +1,52 @@
-# GitHub Secret Detection Script
+GitHub Sensitive Data Scanner
 
-A Python-based OSINT tool that identifies sensitive information leaked in public GitHub repositories related to a specific target keyword or domain name.
+This script automates the process of identifying exposed sensitive information across public GitHub repositories based on a target keyword or domain name. It uses the GitHub Code Search API and the GitHub Contents API to fetch file contents, scan the data, and extract exact leak details.
 
----
+Features
+--------
 
-## Features
-- Searches GitHub public repositories using the GitHub Code Search API.
-- Detects:
+• Search GitHub for files containing your target keyword.  
+• Fetch raw file contents through GitHub API.  
+• Detect common sensitive patterns such as:  
   - Passwords  
   - API keys  
+  - Secrets  
   - SQL credentials  
+  - IP addresses  
+  - Authorization tokens  
   - Private keys  
-  - Tokens / Authorization strings  
-  - Server IPs  
-  - `.env` and configuration file leaks  
-- Extracts:
-  - Exact line number of the leak  
-  - Leaked line content  
-  - Repository name  
+• Extracts:  
+  - Line number  
   - File path  
-  - Match type (password, token, etc.)  
-  - Direct GitHub URL  
+  - Repo name  
+  - Matched secret  
+  - Leak type  
+  - Exact matched line  
+  - GitHub URL  
+• Saves results into a structured results.json file.
 
----
+Requirements
+------------
 
-##  How to Use This Script
+• Python 3.8+  
+• GitHub Personal Access Token  
+• Internet connection  
 
-### **1️ Requirements**
-- Python 3.8 or higher  
-- An active GitHub Personal Access Token  
-  (with `public_repo` or `repo` permissions)
+Install dependencies:
+---------------------
 
----
+    pip install requests
 
-## **2️ Running the Script**
+Generate GitHub Personal Access Token
+-------------------------------------
 
-### **Option A: Run Directly**
-```bash
-python3 secret_scanner.py
+1. Login to GitHub: https://github.com  
+2. Go to **Settings**  
+3. Navigate to **Developer settings → Personal access tokens → Tokens (classic)**  
+4. Click **Generate new token**  
+5. Select the following scopes:  
+      - public_repo  
+      - read:user  
+6. Click **Generate token**  
+7. Copy the token (you won't be able to view it again).  
+8. Use it directly in the script when prompted.
