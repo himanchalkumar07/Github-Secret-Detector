@@ -3,8 +3,14 @@ import base64
 import re
 import json
 import sys
+import time
+
 
 SEARCH_API = "https://api.github.com/search/code"
+
+# Cache for ETags to avoid rate limits
+etag_cache = {}
+
 
 SENSITIVE_PATTERNS = {
     "password": r"(?:pass|pwd|password)\s*[:=]\s*['\"]?([^\s'\"#]+)",
@@ -31,7 +37,7 @@ def get_user_inputs():
 
 def github_search(token, query):
     headers = {"Authorization": f"token {token}"}
-    params = {"q": query, "per_page": 50}
+    params = {"q": query, "per_page": 30}
 
     response = requests.get(SEARCH_API, headers=headers, params=params)
 
@@ -42,23 +48,47 @@ def github_search(token, query):
     return response.json().get("items", [])
 
 
-def fetch_file_content(token, raw_url):
+def fetch_file_via_api(token, repo, path, branch):
+
+    url = f"https://api.github.com/repos/{repo}/contents/{path}?ref={branch}"
+
     headers = {"Authorization": f"token {token}"}
-    response = requests.get(raw_url, headers=headers)
+
+    # Use ETag caching to avoid rate limits
+    if url in etag_cache:
+        headers["If-None-Match"] = etag_cache[url]
+
+    response = requests.get(url, headers=headers)
+
+    # ETag hit, no download required (does not count to rate limit)
+    if response.status_code == 304:
+        return etag_cache[url]["content"]
 
     if response.status_code != 200:
         return None
 
-    data = response.json()
-    content = data.get("content", "")
-    encoding = data.get("encoding", "base64")
+    # Save new ETag
+    if "ETag" in response.headers:
+        etag_cache[url] = {
+            "etag": response.headers["ETag"],
+            "content": response.json()
+        }
 
-    try:
-        if encoding == "base64":
-            decoded = base64.b64decode(content).decode("utf-8", errors="ignore")
-            return decoded
-    except:
+    return response.json()
+
+
+def extract_file_content(api_response):
+    if not api_response:
         return None
+
+    content = api_response.get("content", "")
+    encoding = api_response.get("encoding", "")
+
+    if encoding == "base64":
+        try:
+            return base64.b64decode(content).decode("utf-8", errors="ignore")
+        except:
+            return None
 
     return None
 
@@ -81,19 +111,15 @@ def scan_for_leaks(content):
 
 
 def build_search_queries(keyword):
-    queries = [
+    return [
         keyword,
         f"\"{keyword}\"",
         f"{keyword} in:file",
-        f"{keyword} in:path",
         f"{keyword} extension:env",
         f"{keyword} extension:json",
-        f"{keyword} extension:yaml",
-        f"{keyword} extension:config",
+        f"\"{keyword}\" extension:yaml",
         f"{keyword} extension:ini",
-        f"user@{keyword}" if "." in keyword else "",
     ]
-    return [q for q in queries if q]
 
 
 def main():
@@ -109,9 +135,14 @@ def main():
         for item in results:
             repo = item["repository"]["full_name"]
             path = item["path"]
-            raw_url = item["url"]
+            branch = item["repository"]["default_branch"]
+            html_url = item["html_url"]
 
-            content = fetch_file_content(token, raw_url)
+            api_file = fetch_file_via_api(token, repo, path, branch)
+            if not api_file:
+                continue
+
+            content = extract_file_content(api_file)
             if not content:
                 continue
 
@@ -125,7 +156,7 @@ def main():
                     "match_type": leak["type"],
                     "value": leak["value"],
                     "line": leak["line"],
-                    "github_url": item["html_url"]
+                    "github_url": html_url
                 }
                 all_results.append(entry)
 
@@ -136,8 +167,10 @@ def main():
                 print("Type:", leak["type"])
                 print("Value:", leak["value"])
                 print("Matched Line:", leak["line"])
-                print("URL:", item["html_url"])
+                print("URL:", html_url)
                 print("----------------------------\n")
+
+        time.sleep(1)  # slow down to avoid further rate limits
 
     with open("results.json", "w") as f:
         json.dump(all_results, f, indent=4)
@@ -150,3 +183,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
