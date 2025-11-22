@@ -1,52 +1,39 @@
-GitHub Sensitive Data Scanner
+# GitHub Secret Leak Scanner
+Lightweight Python tool to detect leaked credentials, passwords, API keys, and sensitive information across public GitHub repositories using the GitHub Code Search API.
 
-This script automates the process of identifying exposed sensitive information across public GitHub repositories based on a target keyword or domain name. It uses the GitHub Code Search API and the GitHub Contents API to fetch file contents, scan the data, and extract exact leak details.
+This tool helps security researchers, bug bounty hunters, and red teamers quickly identify exposed secrets related to a specific target domain, keyword, or company name.
 
-Features
---------
+---
 
-• Search GitHub for files containing your target keyword.  
-• Fetch raw file contents through GitHub API.  
-• Detect common sensitive patterns such as:  
-  - Passwords  
-  - API keys  
-  - Secrets  
-  - SQL credentials  
-  - IP addresses  
-  - Authorization tokens  
-  - Private keys  
-• Extracts:  
-  - Line number  
-  - File path  
-  - Repo name  
-  - Matched secret  
-  - Leak type  
-  - Exact matched line  
-  - GitHub URL  
-• Saves results into a structured results.json file.
+## Features
 
-Requirements
-------------
+### GitHub API-Powered Secret Scanning
+Searches public GitHub repositories for files containing your target keyword or domain.
 
-• Python 3.8+  
-• GitHub Personal Access Token  
-• Internet connection  
+### Detects Multiple Secret Types
+Built-in regex signatures detect:
+- API keys
+- Tokens (Auth, Bearer, OAuth)
+- Passwords and credentials
+- Database secrets
+- Private keys
+- Hardcoded configs and hosts
 
-Install dependencies:
----------------------
+### Precise Leak Details
+For each secret found, the tool extracts:
+- Repository name  
+- File path  
+- GitHub URL  
+- Line number of the leak  
+- Exact leaked line  
+- Type of leak (password, token, SQL, etc.)
 
-    pip install requests
+### JSON Output
+Produces clean JSON for automation, pipeline integration, dashboards, or SIEM ingestion.
 
-Generate GitHub Personal Access Token
--------------------------------------
+---
 
-1. Login to GitHub: https://github.com  
-2. Go to **Settings**  
-3. Navigate to **Developer settings → Personal access tokens → Tokens (classic)**  
-4. Click **Generate new token**  
-5. Select the following scopes:  
-      - public_repo  
-      - read:user  
-6. Click **Generate token**  
-7. Copy the token (you won't be able to view it again).  
-8. Use it directly in the script when prompted.
+## Installation
+
+```bash
+pip install requests
