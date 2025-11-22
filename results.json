@@ -1,0 +1,10 @@
+[
+  {
+    "repository": "sample/repo",
+    "file_path": "config/settings.py",
+    "line_number": 82,
+    "match_type": "password",
+    "leaked_line": "db_password = 'supersecret123'",
+    "github_url": "https://github.com/sample/repo/blob/main/config/settings.py#L82"
+  }
+]
