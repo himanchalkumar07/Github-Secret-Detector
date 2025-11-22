@@ -1,10 +1,33 @@
-[
-  {
-    "repository": "sample/repo",
-    "file_path": "config/settings.py",
-    "line_number": 82,
-    "match_type": "password",
-    "leaked_line": "db_password = 'supersecret123'",
-    "github_url": "https://github.com/sample/repo/blob/main/config/settings.py#L82"
-  }
-]
+{
+  "target": "cashify.in",
+  "total_leaks_found": 3,
+  "results": [
+    {
+      "repo_name": "example-user/cashify-backend",
+      "file_path": "config/database.js",
+      "github_url": "https://github.com/example-user/cashify-backend/blob/main/config/database.js",
+      "line_number": 42,
+      "leak_type": "Database Password",
+      "matched_secret": "password=Cashify@123",
+      "exact_line": "password: 'Cashify@123'"
+    },
+    {
+      "repo_name": "dev123/cashify-app",
+      "file_path": "src/app.js",
+      "github_url": "https://github.com/dev123/cashify-app/blob/main/src/app.js",
+      "line_number": 89,
+      "leak_type": "API Key",
+      "matched_secret": "AIzaSyC9xk_example_key",
+      "exact_line": "const GOOGLE_KEY = 'AIzaSyC9xk_example_key';"
+    },
+    {
+      "repo_name": "coder987/cashify-tools",
+      "file_path": "auth/token.txt",
+      "github_url": "https://github.com/coder987/cashify-tools/blob/main/auth/token.txt",
+      "line_number": 1,
+      "leak_type": "Auth Token",
+      "matched_secret": "ghp_3948sd98fsdmf9834fsdf",
+      "exact_line": "ghp_3948sd98fsdmf9834fsdf"
+    }
+  ]
+}
